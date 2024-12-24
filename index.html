@@ -95,6 +95,16 @@
             plotter.shearForce.plot(shearForceData);
             plotter.bendingMoment.plot(bendingMomentData);
         });
+        document.getElementById('condition').addEventListener('change', function(e) {
+            const secondarySpanInput = document.getElementById('secondarySpan');
+            if (this.value === 'simply-supported') {
+                secondarySpanInput.value = '';
+                secondarySpanInput.disabled = true;
+            } else {
+                secondarySpanInput.disabled = false;
+            }
+        });
+        document.getElementById('condition').dispatchEvent(new Event('change'));
     </script>
 </body>
 </html>

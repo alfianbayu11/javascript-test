@@ -46,7 +46,7 @@ class AnalysisPlotter {
                             display: true,
                             text: 'Position (m)'
                         },
-                        // Set max X based on condition and spans
+                        min: 0,
                         max: this.getMaxX(data)
                     },
                     y: {
@@ -70,31 +70,28 @@ class AnalysisPlotter {
         const condition = document.getElementById('condition').value;
         if (condition === 'simply-supported') {
             return data.beam.primarySpan;
-        } else if (condition === 'two-span-unequal') {
-            return data.beam.primarySpan + data.beam.secondarySpan;
+        } else {
+            return data.beam.primarySpan + (data.beam.secondarySpan || 0);
         }
-        return data.beam.primarySpan;
     }
 
     generatePoints(data) {
         const points = [];
-        const numPoints = 100;
-        const condition = document.getElementById('condition').value;
+        const numPoints = 50; // Reduced number of points
+        const maxX = this.getMaxX(data) * 1000; // Convert to mm
 
-        // Set total span based on condition
-        let totalSpan;
-        if (condition === 'simply-supported') {
-            totalSpan = data.beam.primarySpan * 1000;
-        } else if (condition === 'two-span-unequal') {
-            totalSpan = (data.beam.primarySpan + data.beam.secondarySpan) * 1000;
-        } else {
-            totalSpan = data.beam.primarySpan * 1000;
-        }
-
+        // Generate points with safe step size
+        const step = maxX / numPoints;
         for (let i = 0; i <= numPoints; i++) {
-            const x = (i / numPoints) * totalSpan;
-            const result = data.equation(x);
-            points.push({ x: result.x, y: result.y });
+            const x = i * step;
+            try {
+                const result = data.equation(x);
+                if (result && isFinite(result.x) && isFinite(result.y)) {
+                    points.push(result);
+                }
+            } catch (e) {
+                console.error('Error calculating point:', e);
+            }
         }
 
         return points;
